@@ -1,4 +1,4 @@
-#include "VariableValue.hh"
+#include "VariableValue.hpp"
 #include <iostream>
 
 VariableValue::VariableValue(int _width) : bits(_width), width(_width)
