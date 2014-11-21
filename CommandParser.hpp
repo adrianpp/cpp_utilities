@@ -60,7 +60,7 @@ Valid options:
 
 The following is a full program listing that combines all of the above:
 
-#include "CommandParser.hh"
+#include "CommandParser.hpp"
 
 class UserType {
 	//intentionally empty
@@ -82,7 +82,7 @@ public:
 		if( s == "1" )
 			return ParsedToken<bool>(true);
 		if( s == "0" )
-			return ParsedToken<bool>(true);
+			return ParsedToken<bool>(false);
 		return ParsedToken<bool>();
 	}
 };
@@ -150,18 +150,18 @@ Valid options:
   twoArgs          [bool] [int] - A call that takes two arguments
   userFunc         [UserType]   - A call that takes a non-builtin type
 SimpleFunction() called.
-boolFunction(1) called.
+boolFunction(0) called.
 boolFunction(1) called.
 twoArgFunction(1, 7) called.
 userTypeFunction() called.
 
 ***************************************/
 
-#ifndef _COMMAND_PARSER_HH__
-#define _COMMAND_PARSER_HH__
+#ifndef _COMMAND_PARSER_HPP__
+#define _COMMAND_PARSER_HPP__
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-#error CommandParser.hh requires --std=c++0x!
+#error CommandParser.hpp requires --std=c++0x!
 #else
 
 #include <memory>
@@ -195,7 +195,7 @@ public:
   //In your specialization, you must have a static function parse() that takes a std::string and returns a ParsedToken<SameTypeAsSpecialization>
   static ParsedToken<T> parse(std::string)
 	{
-		static_assert(always_false<T>::value, "You must specialize TokenParser<> with the type listed above as T in order to use CommandParser - see comments at top of CommandParser.hh for example.");
+		static_assert(always_false<T>::value, "You must specialize TokenParser<> with the type listed above as T in order to use CommandParser - see comments at top of CommandParser.hpp for example.");
 	}
 };
 
