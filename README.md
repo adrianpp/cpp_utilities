@@ -1,4 +1,4 @@
-c-utilities
+cpp_utilities
 ===========
 
 repository for common c++ utilities
