@@ -14,8 +14,8 @@ struct ThirdTypeTag {};
 
 template<class... Args>
 struct UsesConfig {
-    using FirstType = typename MyConfig::GetTypeOrDefault<FirstTypeTag, double, Args...>::type;
-    typedef typename MyConfig::GetTypeOrDefault<SecondTypeTag, long, Args...>::type SecondType;
+    using FirstType = MyConfig::GetTypeOrDefault_t<FirstTypeTag, double, Args...>;
+    typedef MyConfig::GetTypeOrDefault_t<SecondTypeTag, long, Args...> SecondType;
 #if TEMPLATE_CONFIG_USE_AUTO_NTTP
     static const int ThirdValue = MyConfig::GetValueOrDefault<ThirdTypeTag, 3, Args...>::value;
 #else
@@ -70,7 +70,7 @@ int main()
 	return 0;
 }
  
-#endif
+#endif /* #if 0 */
 
 #include <type_traits>
 
@@ -79,10 +79,17 @@ int main()
     #define TEMPLATE_CONFIG_USE_AUTO_NTTP (__cplusplus >= 201703L)
 #endif
 
+#ifndef TEMPLATE_CONFIG_USE_TEMPLATE_VARIABLE
+    #define TEMPLATE_CONFIG_USE_TEMPLATE_VARIABLE (__cplusplus >= 201402L)
+#endif
+
 namespace MyConfig {
 
 template<class Tag, class Default, class... Args>
 struct GetTypeOrDefault;
+	
+template<class Tag, class Default, class... Args>
+using GetTypeOrDefault_t = typename GetTypeOrDefault<Tag, Default, Args...>::type;
 
 template<class Tag, class Default, class First, class... Rest>
 struct GetTypeOrDefault<Tag,Default,First,Rest...> {
@@ -101,10 +108,20 @@ struct GetTypeOrDefault<Tag,Default> {
 #if TEMPLATE_CONFIG_USE_AUTO_NTTP
 template<class Tag, auto Value, class... Args>
 struct GetValueOrDefault;
-#else
+#else /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 template<class Tag, class Type, Type Value, class... Args>
 struct GetValueOrDefault;
-#endif
+#endif /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
+	
+#if TEMPLATE_CONFIG_USE_TEMPLATE_VARIABLE
+#if TEMPLATE_CONFIG_USE_AUTO_NTTP
+template<class Tag, auto Value, class... Args>
+static constexpr auto GetValueOrDefault_v = GetValueOrDefault<Tag, Value, Args...>::value;
+#else /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
+template<class Tag, class Type, Type Value, class... Args>
+static constexpr auto GetValueOrDefault_v = GetValueOrDefault<Tag, Type, Value, Args...>::value;
+#endif /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
+#endif /* TEMPLATE_CONFIG_USE_TEMPLATE_VARIABLE */
 
 #if TEMPLATE_CONFIG_USE_AUTO_NTTP
 template<class Tag, auto Value, class First, class... Rest>
@@ -115,7 +132,7 @@ struct GetValueOrDefault<Tag,Value,First,Rest...> {
 	        GetValueOrDefault<Tag,Value,Rest...>
 	    >::type::value;
 };
-#else
+#else /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 template<class Tag, class Type, Type Value, class First, class... Rest>
 struct GetValueOrDefault<Tag,Type,Value,First,Rest...> {
     static const auto value = std::conditional<
@@ -124,19 +141,19 @@ struct GetValueOrDefault<Tag,Type,Value,First,Rest...> {
 	        GetValueOrDefault<Tag,Type,Value,Rest...>
 	    >::type::value;
 };
-#endif
+#endif /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 
 #if TEMPLATE_CONFIG_USE_AUTO_NTTP
 template<class Tag, auto Value>
 struct GetValueOrDefault<Tag,Value> {
     static const auto value = Value;
 };
-#else
+#else /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 template<class Tag, class Type, Type Value>
 struct GetValueOrDefault<Tag,Type,Value> {
     static const auto value = Value;
 };
-#endif
+#endif /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 
 // helper class for providing a configuration tag->type pair
 template<class Tag, class Type>
@@ -152,13 +169,13 @@ struct ConfigValue {
     typedef Tag tag;
     static const auto value = Value;
 };
-#else
+#else /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 template<class Tag, class Type, Type Value>
 struct ConfigValue {
     typedef Tag tag;
     static const Type value = Value;
 };
-#endif
+#endif /* TEMPLATE_CONFIG_USE_AUTO_NTTP */
 
 } /* namespace MyConfig */
 
